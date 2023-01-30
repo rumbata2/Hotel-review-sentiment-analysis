@@ -1,5 +1,6 @@
 import re
-
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 
 NON_ENGLISH_SYMBOLS = "À|Á|Â|Ã|Ä|Å|Æ|Ç|È|É|Ê|Ë|Ì|Í|Î|Ï|Ð|Ñ|Ò|Ó|Ô|Õ|Ö|×|Ø|Ù|Ú|Û|Ü|Ý|Þ|ß|à|á|â|ã|ä|å|æ|ç|è|é|ê|ë|ì|í|î|ï|ð|ñ|ò|ó|ô|õ|ö|÷|ø|ù|ú|û|ü|ý|þ|ÿ"
 
@@ -29,7 +30,39 @@ def in_english(review_text):
 
     return True
     
+def clean_text(text):
+    """
+    Processes a single review text to a point where we can extract features from it
+    """
 
+    text = text.lower()
+    text = re.sub(r'[%.,?0-9\"\'!\-\(\):]', '', text)
+    text = re.sub(r' st | nd | rd | th ', ' ', text)
+    text = re.sub(r' \| ', ' ', text)
+    
+    text = text.split()
+    text = [word for word in text if word not in stopwords.words("english")]
 
-#print(in_english("this hotel is fucking gàrbàge lmao."))
+    lemmatizer = WordNetLemmatizer()
+    text = list(map(lemmatizer.lemmatize, text))
+
+    return text
+
+def split_matrix_data(X, y, delim_pct):
+    """
+    X: (n, m) matrix
+    y: array of size n
+
+    Splits the data into a training set and a validation set
+    """
+
+    length = len(X)
+    delim_length = int(delim_pct * length)
+
+    X_train = X[: delim_length]
+    y_train = y[: delim_length]
+    X_test = X[delim_length :]
+    y_test = y[delim_length :]
+
+    return X_train, y_train, X_test, y_test
 
